@@ -262,6 +262,7 @@ git commit -m "feat: add Card component"
 // src/components/shared/ProgressBar.jsx
 export function ProgressBar({ value, max = 100, size = 'md', showLabel = false, color = 'blue' }) {
   const percentage = Math.min(Math.round((value / max) * 100), 100)
+  const barStyle = { width: `${percentage}%` }
 
   const heights = {
     sm: 'h-1.5',
@@ -281,9 +282,7 @@ export function ProgressBar({ value, max = 100, size = 'md', showLabel = false, 
       <div className={`w-full bg-gray-200 dark:bg-gray-700 rounded-full ${heights[size]}`}>
         <div
           className={`${colors[color]} ${heights[size]} rounded-full progress-animate`}
-          style={% raw %}
-{{ width: `${percentage}%` }}
-{% endraw %}
+          style={barStyle}
         />
       </div>
       {showLabel && (
@@ -318,6 +317,7 @@ import { Card } from './Card'
 
 export function LevelCard({ level, status, progress, onClick }) {
   // status: 'locked' | 'available' | 'in_progress' | 'completed'
+  const progressStyle = { width: `${progress}%` }
 
   const statusStyles = {
     locked: 'opacity-60 cursor-not-allowed',
@@ -355,7 +355,7 @@ export function LevelCard({ level, status, progress, onClick }) {
               <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
                 <div
                   className="h-1.5 bg-blue-500 rounded-full progress-animate"
-                  style={{ width: `${progress}%` }}
+                  style={progressStyle}
                 />
               </div>
             </div>
