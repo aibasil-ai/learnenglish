@@ -1,3 +1,7 @@
+---
+render_with_liquid: false
+---
+
 # 英文單字學習 App 實作計畫
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
