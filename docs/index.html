@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LearnEnglish 遊戲說明</title>
+    <style>
+      :root {
+        --bg: #07080f;
+        --bg-soft: #101325;
+        --line: #1cf6ff;
+        --line-soft: rgba(28, 246, 255, 0.35);
+        --hot: #ff2ea6;
+        --text: #def8ff;
+        --muted: #79a6b7;
+        --ok: #9dfc61;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Noto Sans TC", "Segoe UI", sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at 20% 20%, #1a1235 0%, #090b14 40%, #05060b 100%);
+        min-height: 100vh;
+      }
+
+      .grid {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(28, 246, 255, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(28, 246, 255, 0.08) 1px, transparent 1px);
+        background-size: 32px 32px;
+        pointer-events: none;
+        opacity: 0.35;
+      }
+
+      .scanline {
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.02) 0,
+          rgba(255, 255, 255, 0.02) 1px,
+          transparent 2px,
+          transparent 4px
+        );
+        pointer-events: none;
+        opacity: 0.2;
+      }
+
+      .wrap {
+        position: relative;
+        z-index: 1;
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+
+      .hero {
+        border: 1px solid var(--line-soft);
+        background: linear-gradient(135deg, rgba(16, 19, 37, 0.95), rgba(7, 8, 15, 0.9));
+        border-radius: 16px;
+        padding: 28px 20px;
+        box-shadow: 0 0 20px rgba(28, 246, 255, 0.15), inset 0 0 18px rgba(255, 46, 166, 0.1);
+      }
+
+      .tag {
+        display: inline-block;
+        border: 1px solid var(--hot);
+        color: var(--hot);
+        padding: 4px 10px;
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border-radius: 999px;
+      }
+
+      h1 {
+        margin: 14px 0 8px;
+        font-size: clamp(28px, 6vw, 52px);
+        line-height: 1.05;
+        letter-spacing: 1px;
+        text-shadow: 0 0 12px rgba(28, 246, 255, 0.65), 0 0 20px rgba(255, 46, 166, 0.25);
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .panel-grid {
+        margin-top: 16px;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      }
+
+      .panel {
+        background: rgba(14, 18, 34, 0.85);
+        border: 1px solid rgba(28, 246, 255, 0.25);
+        border-radius: 12px;
+        padding: 14px;
+      }
+
+      .panel h2 {
+        margin: 0 0 8px;
+        font-size: 15px;
+        color: #b7fbff;
+      }
+
+      .panel p,
+      .panel li {
+        margin: 0;
+        color: #a8c6d1;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .panel ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .steps {
+        margin-top: 16px;
+        border: 1px solid rgba(157, 252, 97, 0.4);
+        border-radius: 12px;
+        background: rgba(8, 20, 12, 0.45);
+        padding: 14px;
+      }
+
+      .steps h2 {
+        margin: 0 0 10px;
+        font-size: 15px;
+        color: var(--ok);
+      }
+
+      .steps ol {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .steps li {
+        color: #c8f8ab;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .footer {
+        margin-top: 28px;
+        text-align: center;
+        color: #8a9cb4;
+        font-size: 13px;
+      }
+
+      @media (max-width: 600px) {
+        .hero {
+          padding: 20px 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid"></div>
+    <div class="scanline"></div>
+
+    <main class="wrap">
+      <section class="hero">
+        <span class="tag">Neon Study Protocol</span>
+        <h1>LearnEnglish 遊戲說明</h1>
+        <p class="subtitle">100 關新聞英文字彙，採關卡制學習、四種測驗輪替與進度保存。</p>
+
+        <div class="panel-grid">
+          <article class="panel">
+            <h2>關卡系統</h2>
+            <p>共 20 個主題類別，每類 5 關。每個類別的第 1 關預設解鎖，可自由選擇主題開始學習。</p>
+          </article>
+
+          <article class="panel">
+            <h2>學習模式</h2>
+            <ul>
+              <li>點擊單字卡可翻面查看中文與例句</li>
+              <li>正面可播放單字發音</li>
+              <li>背面可播放例句朗讀</li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <h2>測驗模式</h2>
+            <ul>
+              <li>聽力選義</li>
+              <li>字義選詞</li>
+              <li>認字測驗</li>
+              <li>拼字測驗</li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <h2>系統設定</h2>
+            <ul>
+              <li>預設深色模式</li>
+              <li>預設美式發音，可切換英式</li>
+              <li>設定與學習進度自動儲存</li>
+            </ul>
+          </article>
+        </div>
+
+        <section class="steps">
+          <h2>快速開始</h2>
+          <ol>
+            <li>從首頁選擇你想學的主題類別。</li>
+            <li>完成單字卡學習後進入測驗。</li>
+            <li>測驗達標可解鎖後續關卡並累積星等。</li>
+            <li>於設定頁調整口音、外觀並查看學習統計。</li>
+          </ol>
+        </section>
+      </section>
+
+      <footer class="footer">版權所有 © 2026 AIbasil All rights reserved.</footer>
+    </main>
+  </body>
+</html>
