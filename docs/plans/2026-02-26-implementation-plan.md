@@ -281,7 +281,9 @@ export function ProgressBar({ value, max = 100, size = 'md', showLabel = false, 
       <div className={`w-full bg-gray-200 dark:bg-gray-700 rounded-full ${heights[size]}`}>
         <div
           className={`${colors[color]} ${heights[size]} rounded-full progress-animate`}
-          style={{ width: `${percentage}%` }}
+          style={% raw %}
+{{ width: `${percentage}%` }}
+{% endraw %}
         />
       </div>
       {showLabel && (
