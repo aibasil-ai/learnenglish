@@ -6,12 +6,47 @@ export function useSpeech() {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [isSupported, setIsSupported] = useState(true)
   const utteranceRef = useRef(null)
+  const hasPrimedRef = useRef(false)
 
   useEffect(() => {
-    if (!('speechSynthesis' in window)) {
+    if (!('speechSynthesis' in window) || typeof window.SpeechSynthesisUtterance === 'undefined') {
       setIsSupported(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (!isSupported) return
+
+    const synth = window.speechSynthesis
+
+    // 觸發語音清單初始化，部分手機瀏覽器需要先呼叫一次
+    synth.getVoices()
+
+    // 手機常需要手勢後才允許語音輸出
+    const primeOnGesture = () => {
+      try {
+        synth.resume()
+
+        if (hasPrimedRef.current) return
+        hasPrimedRef.current = true
+
+        const warmup = new SpeechSynthesisUtterance(' ')
+        warmup.volume = 0
+        synth.speak(warmup)
+        setTimeout(() => synth.cancel(), 80)
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    window.addEventListener('touchstart', primeOnGesture, { once: true, passive: true })
+    window.addEventListener('click', primeOnGesture, { once: true, passive: true })
+
+    return () => {
+      window.removeEventListener('touchstart', primeOnGesture)
+      window.removeEventListener('click', primeOnGesture)
+    }
+  }, [isSupported])
 
   const getVoice = useCallback(() => {
     const voices = window.speechSynthesis.getVoices()
@@ -54,8 +89,41 @@ export function useSpeech() {
     if (!isSupported || !text) return Promise.resolve()
 
     return new Promise((resolve) => {
+      const synth = window.speechSynthesis
+      let hasSpoken = false
+      let finished = false
+      let fallbackTimer = null
+      let voicesChangedHandler = null
+
+      const cleanup = () => {
+        if (fallbackTimer) clearTimeout(fallbackTimer)
+        if (voicesChangedHandler) {
+          synth.removeEventListener('voiceschanged', voicesChangedHandler)
+        }
+      }
+
+      const finish = () => {
+        if (finished) return
+        finished = true
+        cleanup()
+        setIsSpeaking(false)
+        resolve()
+      }
+
+      const speakOnce = () => {
+        if (hasSpoken) return
+        hasSpoken = true
+        try {
+          synth.resume()
+          synth.speak(utterance)
+        } catch (e) {
+          finish()
+        }
+      }
+
       // 停止之前的發音
-      window.speechSynthesis.cancel()
+      synth.cancel()
+      synth.resume()
 
       const utterance = new SpeechSynthesisUtterance(text)
       utteranceRef.current = utterance
@@ -75,27 +143,27 @@ export function useSpeech() {
       utterance.volume = options.volume || 1
 
       utterance.onstart = () => setIsSpeaking(true)
-      utterance.onend = () => {
-        setIsSpeaking(false)
-        resolve()
-      }
-      utterance.onerror = () => {
-        setIsSpeaking(false)
-        resolve()
-      }
+      utterance.onend = finish
+      utterance.onerror = finish
 
-      // Chrome 需要延遲載入語音
-      if (window.speechSynthesis.getVoices().length === 0) {
-        window.speechSynthesis.addEventListener('voiceschanged', () => {
+      // 手機瀏覽器常出現 voices 非同步載入或事件不觸發，因此要有 fallback
+      if (synth.getVoices().length === 0) {
+        voicesChangedHandler = () => {
           const newVoice = getVoice()
           if (newVoice) {
             utterance.voice = newVoice
             utterance.lang = newVoice.lang
           }
-          window.speechSynthesis.speak(utterance)
-        }, { once: true })
+          speakOnce()
+        }
+
+        synth.addEventListener('voiceschanged', voicesChangedHandler, { once: true })
+
+        fallbackTimer = setTimeout(() => {
+          speakOnce()
+        }, 350)
       } else {
-        window.speechSynthesis.speak(utterance)
+        speakOnce()
       }
     })
   }, [isSupported, getVoice, state.accentType])
