@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useApp } from '../contexts/AppContext'
-import { allLevels, totalWords } from '../data'
+import { allLevels, totalWords, levelGroups, categoryStartLevelIds } from '../data'
 import { Button, Card, ProgressBar, LevelCard } from './shared'
 
 export function HomeScreen() {
@@ -10,32 +10,24 @@ export function HomeScreen() {
 
   const learnedCount = state.learnedWords.length
   const progress = Math.round((learnedCount / totalWords) * 100)
-  const highestUnlocked = Math.max(...state.unlockedLevels)
+  const latestLearningLevelId = useMemo(() => {
+    if (state.currentLevelId) return state.currentLevelId
 
-  const levelGroups = useMemo(() => {
-    const groups = []
+    const learnedLevelIds = Object.entries(state.levelProgress)
+      .filter(([, value]) => (value?.learned?.length || 0) > 0)
+      .map(([levelId]) => Number(levelId))
+      .filter((levelId) => !Number.isNaN(levelId))
 
-    for (const level of allLevels) {
-      const lastGroup = groups[groups.length - 1]
-      if (!lastGroup || lastGroup.category !== level.category) {
-        groups.push({
-          category: level.category,
-          levels: [level],
-        })
-      } else {
-        lastGroup.levels.push(level)
-      }
-    }
-
-    return groups
-  }, [])
+    if (learnedLevelIds.length > 0) return Math.max(...learnedLevelIds)
+    return categoryStartLevelIds[0] || 1
+  }, [state.currentLevelId, state.levelProgress])
 
   const activeGroupIndex = useMemo(() => {
     const index = levelGroups.findIndex((group) =>
-      group.levels.some((level) => level.id === highestUnlocked),
+      group.levels.some((level) => level.id === latestLearningLevelId),
     )
     return index >= 0 ? index : 0
-  }, [highestUnlocked, levelGroups])
+  }, [latestLearningLevelId])
 
   useEffect(() => {
     if (!expandAll) {
@@ -137,7 +129,6 @@ export function HomeScreen() {
         {levelGroups.map((group, index) => {
           const isOpen = expandAll || index === openGroupIndex
           const startLevel = group.levels[0].id
-          const endLevel = group.levels[group.levels.length - 1].id
           const groupProgress = getGroupProgress(group)
           const groupStats = getGroupStats(group)
 
@@ -153,7 +144,7 @@ export function HomeScreen() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
-                      關卡 {startLevel} - {endLevel}
+                      關卡 1 - {group.levels.length}
                     </p>
                     <h3 className="font-semibold text-gray-800 dark:text-gray-100">
                       {group.category}
@@ -177,10 +168,11 @@ export function HomeScreen() {
 
               {isOpen && (
                 <div className="px-3 pb-3 border-t border-gray-100 dark:border-gray-700 space-y-2">
-                  {group.levels.map((level) => (
+                  {group.levels.map((level, levelIndex) => (
                     <LevelCard
                       key={level.id}
                       level={level}
+                      levelNumber={levelIndex + 1}
                       status={getLevelStatus(level.id)}
                       progress={getLevelProgress(level.id)}
                       onClick={() => handleLevelClick(level)}

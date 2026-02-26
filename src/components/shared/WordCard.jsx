@@ -11,6 +11,11 @@ export function WordCard({ word, onLearned }) {
     speak(word.word)
   }
 
+  const handleSpeakExample = (e) => {
+    e.stopPropagation()
+    speak(word.example, { rate: 0.85 })
+  }
+
   return (
     <Card
       className="p-6 min-h-[300px] flex flex-col cursor-pointer select-none"
@@ -50,6 +55,13 @@ export function WordCard({ word, onLearned }) {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {word.exampleMeaning}
             </p>
+            <button
+              onClick={handleSpeakExample}
+              disabled={isSpeaking}
+              className="mt-3 px-3 py-2 rounded-lg bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors text-sm text-blue-700 dark:text-blue-200"
+            >
+              {isSpeaking ? '🔊 播放中' : '🔈 播放例句'}
+            </button>
           </div>
           <p className="text-sm text-gray-400 mt-4">
             點擊卡片翻回

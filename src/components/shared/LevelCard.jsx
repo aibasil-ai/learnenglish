@@ -1,6 +1,6 @@
 import { Card } from './Card'
 
-export function LevelCard({ level, status, progress, onClick }) {
+export function LevelCard({ level, levelNumber, status, progress, onClick }) {
   // status: 'locked' | 'available' | 'in_progress' | 'completed'
 
   const statusStyles = {
@@ -29,7 +29,7 @@ export function LevelCard({ level, status, progress, onClick }) {
         </div>
         <div className="flex-1">
           <h3 className="font-semibold text-gray-800 dark:text-gray-200">
-            關卡 {level.id}
+            關卡 {levelNumber ?? level.id}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {level.name}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '../contexts/AppContext'
-import { getLevelById } from '../data'
+import { getLevelById, getLevelMetaById } from '../data'
 import { Button, ProgressBar, WordCard } from './shared'
 
 export function LevelScreen() {
@@ -8,6 +8,7 @@ export function LevelScreen() {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const level = getLevelById(state.currentLevelId)
+  const levelMeta = level ? getLevelMetaById(level.id) : null
   const words = level?.words || []
   const currentWord = words[currentIndex]
 
@@ -65,7 +66,9 @@ export function LevelScreen() {
         >
           ← 返回
         </button>
-        <h1 className="font-semibold text-gray-800 dark:text-gray-100">關卡 {level.id}</h1>
+        <h1 className="font-semibold text-gray-800 dark:text-gray-100">
+          關卡 {levelMeta?.categoryLevel || 1}/{levelMeta?.categoryLevelCount || 5}
+        </h1>
         <div className="w-16" />
       </div>
 
@@ -79,14 +82,22 @@ export function LevelScreen() {
       {currentWord && <WordCard word={currentWord} />}
 
       <div className="flex items-center justify-center gap-4 mt-6">
-        <Button variant="ghost" onClick={handlePrev} disabled={currentIndex === 0}>
+        <Button
+          variant="secondary"
+          size="lg"
+          className="w-16 h-16 text-2xl flex items-center justify-center"
+          onClick={handlePrev}
+          disabled={currentIndex === 0}
+        >
           ◀️
         </Button>
         <span className="text-gray-500 dark:text-gray-400">
           {words.length > 0 ? `${currentIndex + 1} / ${words.length}` : '0 / 0'}
         </span>
         <Button
-          variant="ghost"
+          variant="secondary"
+          size="lg"
+          className="w-16 h-16 text-2xl flex items-center justify-center"
           onClick={handleNext}
           disabled={words.length === 0 || currentIndex === words.length - 1}
         >

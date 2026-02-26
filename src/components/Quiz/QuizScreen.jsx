@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useQuiz } from '../../hooks/useQuiz'
+import { useFeedbackSound } from '../../hooks/useFeedbackSound'
 import { ProgressBar } from '../shared'
 import { ListeningQuiz } from './ListeningQuiz'
 import { MeaningQuiz } from './MeaningQuiz'
@@ -10,6 +11,7 @@ import { SpellingQuiz } from './SpellingQuiz'
 export function QuizScreen() {
   const { dispatch } = useApp()
   const quiz = useQuiz()
+  const { playCorrect, playWrong } = useFeedbackSound()
   const [feedback, setFeedback] = useState(null)
   const [showingFeedback, setShowingFeedback] = useState(false)
   const { generateQuestions } = quiz
@@ -24,6 +26,8 @@ export function QuizScreen() {
     const isCorrect = quiz.submitAnswer(answer)
     setFeedback(isCorrect ? 'correct' : 'wrong')
     setShowingFeedback(true)
+    if (isCorrect) playCorrect()
+    else playWrong()
 
     setTimeout(() => {
       setFeedback(null)

@@ -1,12 +1,14 @@
 import { useMemo } from 'react'
 import { useApp } from '../contexts/AppContext'
-import { getLevelById } from '../data'
+import { getLevelById, getLevelMetaById } from '../data'
 import { Button, Card } from './shared'
 
 export function ResultScreen() {
   const { state, dispatch } = useApp()
 
   const level = getLevelById(state.currentLevelId)
+  const nextLevel = level ? getLevelById(level.id + 1) : null
+  const nextLevelMeta = nextLevel ? getLevelMetaById(nextLevel.id) : null
   const lastResult = state.quizHistory[state.quizHistory.length - 1]
 
   const { correct, total, percentage, stars } = useMemo(() => {
@@ -103,8 +105,10 @@ export function ResultScreen() {
               : '需要多練習'}
       </p>
 
-      {nextLevelUnlocked && level && (
-        <p className="text-green-500 font-medium mb-6">🔓 已解鎖關卡 {level.id + 1}</p>
+      {nextLevelUnlocked && nextLevel && (
+        <p className="text-green-500 font-medium mb-6">
+          🔓 已解鎖 {nextLevel.category} 關卡 {nextLevelMeta?.categoryLevel || 1}
+        </p>
       )}
 
       <div className="w-full space-y-3 mt-4">

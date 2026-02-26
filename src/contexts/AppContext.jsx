@@ -1,11 +1,12 @@
 import { createContext, useContext, useReducer, useEffect, useState } from 'react'
+import { categoryStartLevelIds } from '../data'
 
 const AppContext = createContext()
 
 const initialState = {
   // 設定
   accentType: 'us', // 'us' or 'uk'
-  darkMode: false,
+  darkMode: true,
   isFullscreen: false,
 
   // 學習狀態
@@ -26,7 +27,7 @@ const initialState = {
   quizHistory: [],
 
   // 關卡進度
-  unlockedLevels: [1],
+  unlockedLevels: categoryStartLevelIds,
   completedLevels: [],
   levelProgress: {},
   currentLevelId: null,
@@ -173,14 +174,18 @@ export function AppProvider({ children }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
+        const mergedUnlockedLevels = Array.from(
+          new Set([...(parsed.unlockedLevels || []), ...categoryStartLevelIds]),
+        ).sort((a, b) => a - b)
+
         dispatch({
           type: 'LOAD_SAVED_STATE',
           payload: {
-            accentType: parsed.accentType || 'us',
-            darkMode: parsed.darkMode || false,
+            accentType: parsed.accentType ?? 'us',
+            darkMode: parsed.darkMode ?? true,
             learnedWords: parsed.learnedWords || [],
             quizHistory: parsed.quizHistory || [],
-            unlockedLevels: parsed.unlockedLevels || [1],
+            unlockedLevels: mergedUnlockedLevels,
             completedLevels: parsed.completedLevels || [],
             levelProgress: parsed.levelProgress || {},
             stats: parsed.stats || { totalWordsLearned: 0, totalQuizzesTaken: 0, totalCorrect: 0, totalQuestions: 0 },

@@ -43,7 +43,33 @@ export const allLevels = [
   ...advancedLevels,
 ]
 
+export const levelGroups = allLevels.reduce((groups, level) => {
+  const lastGroup = groups[groups.length - 1]
+  if (!lastGroup || lastGroup.category !== level.category) {
+    groups.push({
+      category: level.category,
+      levels: [level],
+    })
+  } else {
+    lastGroup.levels.push(level)
+  }
+  return groups
+}, [])
+
+const levelMetaMap = new Map()
+for (const group of levelGroups) {
+  group.levels.forEach((level, index) => {
+    levelMetaMap.set(level.id, {
+      category: group.category,
+      categoryLevel: index + 1,
+      categoryLevelCount: group.levels.length,
+    })
+  })
+}
+
 export const getLevelById = (id) => allLevels.find(l => l.id === id)
+export const getLevelMetaById = (id) => levelMetaMap.get(id) || null
+export const categoryStartLevelIds = levelGroups.map(group => group.levels[0].id)
 
 export const getWordById = (wordId) => {
   for (const level of allLevels) {
