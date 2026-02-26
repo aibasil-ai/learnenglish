@@ -8,6 +8,15 @@ export function useSpeech() {
   const utteranceRef = useRef(null)
   const hasPrimedRef = useRef(false)
 
+  const normalizeLang = (lang = '') => lang.toLowerCase().replace('_', '-')
+
+  const formatLang = (lang = '') => {
+    const normalized = normalizeLang(lang)
+    const [base, region] = normalized.split('-')
+    if (!region) return normalized
+    return `${base}-${region.toUpperCase()}`
+  }
+
   useEffect(() => {
     if (!('speechSynthesis' in window) || typeof window.SpeechSynthesisUtterance === 'undefined') {
       setIsSupported(false)
@@ -50,39 +59,55 @@ export function useSpeech() {
 
   const getVoice = useCallback(() => {
     const voices = window.speechSynthesis.getVoices()
+    if (voices.length === 0) return null
 
-    // 優先使用的語音列表
-    const preferredVoices = state.accentType === 'us'
-      ? [
-          'Google US English',
-          'Microsoft Mark - English (United States)',
-          'Microsoft David - English (United States)',
-          'Samantha',
-          'Alex',
-          'en-US',
-        ]
-      : [
-          'Google UK English Female',
-          'Google UK English Male',
-          'Microsoft Hazel - English (United Kingdom)',
-          'Daniel',
-          'en-GB',
-        ]
+    const targetLang = state.accentType === 'us' ? 'en-us' : 'en-gb'
+    const oppositeLang = state.accentType === 'us' ? 'en-gb' : 'en-us'
+    const positiveKeywords = state.accentType === 'us'
+      ? ['united states', 'american', ' us ']
+      : ['united kingdom', 'british', ' england', ' uk ']
+    const negativeKeywords = state.accentType === 'us'
+      ? ['united kingdom', 'british', ' england', ' uk ']
+      : ['united states', 'american', ' us ']
 
-    // 嘗試找到優先語音
-    for (const preferred of preferredVoices) {
-      const voice = voices.find(v =>
-        v.name.includes(preferred) || v.lang.includes(preferred)
-      )
-      if (voice) return voice
+    let bestVoice = null
+    let bestScore = Number.NEGATIVE_INFINITY
+
+    for (const voice of voices) {
+      const lang = normalizeLang(voice.lang)
+      const name = ` ${voice.name.toLowerCase()} `
+      let score = 0
+
+      if (lang === targetLang) score += 120
+      else if (lang.startsWith('en-')) score += 40
+      else if (lang.startsWith('en')) score += 25
+
+      if (lang === oppositeLang) score -= 120
+
+      for (const keyword of positiveKeywords) {
+        if (name.includes(keyword)) score += 60
+      }
+      for (const keyword of negativeKeywords) {
+        if (name.includes(keyword)) score -= 60
+      }
+
+      if (voice.default) score += 5
+
+      if (score > bestScore) {
+        bestScore = score
+        bestVoice = voice
+      }
     }
 
-    // 回退到任何英文語音
-    const langCode = state.accentType === 'us' ? 'en-US' : 'en-GB'
-    const fallback = voices.find(v => v.lang === langCode) ||
-                     voices.find(v => v.lang.startsWith('en'))
+    // 沒有明確匹配時回傳 null，改由 utterance.lang 指示口音，避免強制綁到同一個 fallback voice
+    if (!bestVoice) return null
+    const bestLang = normalizeLang(bestVoice.lang)
+    const keywordMatched = positiveKeywords.some((keyword) =>
+      ` ${bestVoice.name.toLowerCase()} `.includes(keyword),
+    )
+    const isTarget = bestLang === targetLang || keywordMatched
 
-    return fallback || voices[0]
+    return isTarget ? bestVoice : null
   }, [state.accentType])
 
   const speak = useCallback((text, options = {}) => {
@@ -129,12 +154,13 @@ export function useSpeech() {
       utteranceRef.current = utterance
 
       // 設定語音
+      const targetLang = state.accentType === 'us' ? 'en-US' : 'en-GB'
       const voice = getVoice()
       if (voice) {
         utterance.voice = voice
-        utterance.lang = voice.lang
+        utterance.lang = formatLang(voice.lang)
       } else {
-        utterance.lang = state.accentType === 'us' ? 'en-US' : 'en-GB'
+        utterance.lang = targetLang
       }
 
       // 設定參數
@@ -152,7 +178,9 @@ export function useSpeech() {
           const newVoice = getVoice()
           if (newVoice) {
             utterance.voice = newVoice
-            utterance.lang = newVoice.lang
+            utterance.lang = formatLang(newVoice.lang)
+          } else {
+            utterance.lang = targetLang
           }
           speakOnce()
         }
